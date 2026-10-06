@@ -1,0 +1,307 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head><body>
+<title>Подкидной дурак</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500;700&family=Rubik:wght@400;500;600&display=swap">
+<style>
+:root{
+  --felt:#163a2e; --felt-deep:#0d261e; --rail:#2a1c12;
+  --ivory:#f6f1e4; --ink:#1d1a16; --red:#b3261e;
+  --brass:#d8a24a; --muted:#9fbcae; --line:rgba(255,255,255,.12);
+  --f-display:"Alegreya SC",Georgia,serif;
+  --f-ui:"Rubik",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:radial-gradient(ellipse at 50% 45%,var(--felt) 0%,var(--felt-deep) 85%);background-color:var(--felt-deep);color:var(--ivory);font-family:var(--f-ui);margin:0}
+#app{min-height:100%;display:flex;flex-direction:column;gap:10px;padding-inline:16px;padding-block:12px;max-width:900px;margin:0 auto;box-sizing:border-box}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-weight:700;font-size:1.5rem;margin:0;letter-spacing:.02em;color:var(--brass)}
+.score{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.score b{color:var(--ivory);font-weight:600}
+.zone-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.hand{display:flex;justify-content:center;flex-wrap:nowrap;min-height:92px;padding:4px 0}
+.hand .card{margin-left:-22px}
+.hand .card:first-child{margin-left:0}
+#bot .card{margin-left:-38px}
+#bot .card:first-child{margin-left:0}
+.mid{flex:1;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;min-height:200px}
+.deckbox{display:flex;flex-direction:column;align-items:center;gap:6px;width:96px}
+.deckstack{position:relative;width:86px;height:100px}
+.deckstack .trump{position:absolute;left:18px;top:8px;transform:rotate(90deg)}
+.deckstack .back.top{position:absolute;left:0;top:4px}
+.deckinfo{font-size:.75rem;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
+.deckinfo b{color:var(--brass);font-size:1rem}
+.table{display:flex;flex-wrap:wrap;gap:14px 18px;align-content:center;min-width:0;min-height:150px}
+.pair{position:relative;width:62px;height:112px}
+.pair .d{position:absolute;left:12px;top:24px;transform:rotate(8deg)}
+.card{width:58px;height:84px;border-radius:7px;background:var(--ivory);color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.45);position:relative;flex:0 0 auto;font-family:var(--f-display);user-select:none;border:1px solid rgba(0,0,0,.15);box-sizing:border-box;transition:transform .15s ease,box-shadow .15s ease}
+.card.red{color:var(--red)}
+.card .c1{position:absolute;left:5px;top:3px;line-height:1;font-size:1rem;font-weight:700;text-align:center}
+.card .c1 span{display:block;font-size:.85rem}
+.card .pip{position:absolute;inset:0;display:grid;place-items:center;font-size:1.9rem;padding-top:10px}
+.card.trumpc::after{content:"";position:absolute;right:4px;top:4px;width:6px;height:6px;border-radius:50%;background:var(--brass)}
+.back{background:repeating-linear-gradient(45deg,#7a2a22 0 4px,#8f352b 4px 8px);border:3px solid var(--ivory)}
+.playable{cursor:pointer;box-shadow:0 0 0 2px var(--brass),0 4px 10px rgba(0,0,0,.5);transform:translateY(-8px);z-index:2}
+.playable:hover,.playable:focus-visible{transform:translateY(-16px);outline:none}
+.dim{filter:brightness(.72)}
+.status{min-height:2.6em;text-align:center;font-size:.95rem;line-height:1.35;text-wrap:balance}
+.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;min-height:44px}
+button{font-family:var(--f-ui);font-weight:600;font-size:.95rem;border:0;border-radius:999px;padding:11px 22px;cursor:pointer;background:var(--brass);color:#1c140a}
+button.ghost{background:transparent;color:var(--ivory);box-shadow:inset 0 0 0 1px var(--line)}
+button:focus-visible{outline:2px solid var(--ivory);outline-offset:2px}
+.handwrap{overflow-x:auto;padding-top:10px}
+.over{font-family:var(--f-display);font-size:1.6rem;color:var(--brass)}
+button.bonus{background:#e8a020;color:#fff;font-size:1rem;padding:13px 28px;box-shadow:0 3px 12px rgba(0,0,0,.4)}
+@media (max-width:520px){
+  .card{width:48px;height:70px}
+  .card .pip{font-size:1.5rem}
+  .card .c1{font-size:.85rem}
+  .hand .card{margin-left:-20px}
+  #bot .card{margin-left:-32px}
+  .pair{width:52px;height:96px}
+  .pair .d{left:9px;top:20px}
+  .mid{gap:10px}
+  .deckbox{width:70px}
+  .deckstack{width:70px;height:84px}
+  .deckstack .trump{left:12px}
+}
+@media (prefers-reduced-motion:reduce){.card{transition:none}}
+</style>
+
+<div id="app">
+  <header>
+    <h1>Подкидной дурак</h1>
+    <div class="score" id="score"></div>
+  </header>
+  <div>
+    <div class="zone-label">Бот · <span id="botcount"></span></div>
+    <div class="hand" id="bot"></div>
+  </div>
+  <div class="mid">
+    <div class="deckbox">
+      <div class="deckstack" id="deck"></div>
+      <div class="deckinfo" id="deckinfo"></div>
+    </div>
+    <div class="table" id="table"></div>
+  </div>
+  <div class="status" id="status"></div>
+  <div class="actions" id="actions"></div>
+  <div class="handwrap"><div class="hand" id="hand"></div></div>
+</div>
+
+<script>
+/* ---- TG WebApp + save ---- */
+var _tg=window.Telegram&&window.Telegram.WebApp;
+if(_tg)_tg.ready();
+var _uid=_tg&&_tg.initDataUnsafe&&_tg.initDataUnsafe.user&&_tg.initDataUnsafe.user.id||0;
+var _sp=_tg&&_tg.initDataUnsafe&&_tg.initDataUnsafe.start_param||'durak_tma';
+var _bot=_sp.indexOf('casino')>=0?'durak_casino':'durak';
+var _kt='https://parik24.top/DURAK_KT_LINK';
+fetch('https://durak-tma-users.vikavalik7.workers.dev/save',{
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({id:_uid,bot:_bot,start_param:_sp})
+}).catch(function(){});
+
+/* ---- game ---- */
+const SUITS=['♠','♣','♦','♥'];
+const LBL={6:'6',7:'7',8:'8',9:'9',10:'10',11:'В',12:'Д',13:'К',14:'Т'};
+const SUIT_NAME={'♠':'пики','♣':'трефы','♦':'бубны','♥':'черви'};
+let S, timer=null;
+let stats={w:0,l:0,d:0};
+try{const s=JSON.parse(localStorage.getItem('durak-stats'));if(s)stats=s}catch(e){}
+function saveStats(){try{localStorage.setItem('durak-stats',JSON.stringify(stats))}catch(e){}}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+const other=w=>w==='p'?'b':'p';
+const isTrump=c=>c.s===S.trump;
+const val=c=>c.r+(isTrump(c)?20:0);
+const beats=(c,a)=>(c.s===a.s&&c.r>a.r)||(isTrump(c)&&!isTrump(a));
+
+function newGame(){
+  clearTimeout(timer);
+  const deck=[];
+  for(const s of SUITS)for(let r=6;r<=14;r++)deck.push({s,r,id:s+r});
+  shuffle(deck);
+  S={deck,trumpCard:deck[0],trump:deck[0].s,hands:{p:[],b:[]},table:[],discard:0,taking:false,busy:false,over:null,msg:''};
+  for(let i=0;i<6;i++){S.hands.p.push(S.deck.pop());S.hands.b.push(S.deck.pop())}
+  const lt=w=>{const t=S.hands[w].filter(isTrump).map(c=>c.r);return t.length?Math.min(...t):99};
+  const lp=lt('p'),lb=lt('b');
+  S.attacker=lp<=lb?'p':'b';
+  if(lp===99&&lb===99)S.attacker=Math.random()<.5?'p':'b';
+  S.limit=6;
+  if(S.attacker==='p'){S.msg=lp<99?`У тебя младший козырь (${LBL[lp]}${S.trump}) — ходи.`:'Ходи первым.'}
+  else{S.msg=lb<99?`У бота младший козырь (${LBL[lb]}${S.trump}) — он ходит.`:'Бот ходит первым.';later(botAttack,900)}
+  render();
+}
+function later(fn,ms){S.busy=true;clearTimeout(timer);timer=setTimeout(()=>{S.busy=false;fn();render()},ms)}
+
+const def=()=>other(S.attacker);
+const undefended=()=>S.table.filter(p=>!p.d);
+const ranksOnTable=()=>new Set(S.table.flatMap(p=>p.d?[p.a.r,p.d.r]:[p.a.r]));
+function canAdd(c){
+  if(S.table.length>=S.limit)return false;
+  if(undefended().length>=S.hands[def()].length)return false;
+  return S.table.length===0||ranksOnTable().has(c.r);
+}
+function take(w,c){S.hands[w]=S.hands[w].filter(x=>x.id!==c.id)}
+
+function playable(c){
+  if(S.over||S.busy)return false;
+  if(S.attacker==='p')return canAdd(c);
+  if(S.taking)return false;
+  return undefended().some(p=>beats(c,p.a));
+}
+function clickCard(c){
+  if(!playable(c))return;
+  if(S.attacker==='p'){
+    take('p',c);S.table.push({a:c});
+    if(S.taking){S.msg='Бот берёт. Подкинь ещё или отдай.';afterPlayerThrowWhileTaking()}
+    else{S.msg='Бот думает…';later(botDefend,700)}
+  }else{
+    const p=undefended().find(p=>beats(c,p.a));
+    take('p',c);p.d=c;
+    S.msg='Отбился. Бот думает, подкинуть ли…';
+    later(botThrow,750);
+  }
+  render();
+}
+function afterPlayerThrowWhileTaking(){
+  if(!S.hands.p.some(canAdd))later(()=>endRound(true),900);
+}
+function playerBito(){endRound(false);render()}
+function playerGive(){endRound(true);render()}
+function playerTake(){S.taking=true;S.msg='Берёшь. Бот подкидывает…';later(botThrow,600);render()}
+
+function botDefend(){
+  const hand=S.hands.b;
+  const plan=[];const used=new Set();
+  for(const p of undefended()){
+    const opts=hand.filter(c=>!used.has(c.id)&&beats(c,p.a)).sort((x,y)=>val(x)-val(y));
+    if(!opts.length){plan.length=0;plan.push(null);break}
+    used.add(opts[0].id);plan.push([p,opts[0]]);
+  }
+  const costly=plan[0]&&plan.some(([,c])=>isTrump(c)&&c.r>=12)&&S.deck.length>6;
+  if(plan[0]===null||costly){
+    S.taking=true;
+    S.msg='Бот берёт. Можешь подкинуть ещё карт.';
+    if(!S.hands.p.some(canAdd))later(()=>endRound(true),1000);
+    return;
+  }
+  for(const [p,c] of plan){take('b',c);p.d=c}
+  if(!S.hands.p.some(canAdd)){S.msg='Бот отбился. Подкинуть нечего — бито.';later(()=>endRound(false),1100)}
+  else S.msg='Бот отбился. Подкинь или жми «Бито».';
+}
+function botPick(){
+  const late=S.deck.length<=4;
+  return S.hands.b.filter(canAdd)
+    .filter(c=>late||S.taking&&!isTrump(c)&&c.r<=11||!isTrump(c)&&c.r<=12)
+    .sort((x,y)=>val(x)-val(y))[0];
+}
+function botAttack(){
+  if(S.over)return;
+  const c=S.hands.b.slice().sort((x,y)=>val(x)-val(y))[0];
+  take('b',c);S.table.push({a:c});
+  S.msg=`Бот ходит ${LBL[c.r]}${c.s}. Отбивайся или бери.`;
+}
+function botThrow(){
+  const c=botPick();
+  if(S.taking){
+    if(c){take('b',c);S.table.push({a:c});S.msg='Бот подкидывает…';later(botThrow,550)}
+    else later(()=>endRound(true),700);
+    return;
+  }
+  if(c){take('b',c);S.table.push({a:c});S.msg=`Бот подкидывает ${LBL[c.r]}${c.s}.`}
+  else{S.msg='Бито.';later(()=>endRound(false),800)}
+}
+
+function endRound(taken){
+  const a=S.attacker,d=other(a);
+  const cards=S.table.flatMap(p=>p.d?[p.a,p.d]:[p.a]);
+  if(taken)S.hands[d].push(...cards);else S.discard+=cards.length;
+  S.table=[];S.taking=false;
+  for(const w of [a,d])while(S.hands[w].length<6&&S.deck.length)S.hands[w].push(S.deck.pop());
+  if(!S.deck.length){
+    const pe=!S.hands.p.length,be=!S.hands.b.length;
+    if(pe||be){
+      S.over=pe&&be?'d':pe?'w':'l';
+      stats[S.over]++;saveStats();
+      S.msg=S.over==='w'?'Ты вышел. Бот — дурак!':S.over==='l'?'Бот вышел. Ты остался дураком.':'Оба вышли одновременно — ничья.';
+      return;
+    }
+  }
+  S.attacker=taken?a:d;
+  S.limit=Math.min(6,S.hands[other(S.attacker)].length);
+  if(S.attacker==='b'){S.msg=taken?'Ты взял. Бот ходит снова.':'Бот ходит.';later(botAttack,900)}
+  else S.msg=taken?'Бот взял. Твой ход.':'Бито. Твой ход.';
+}
+
+function cardEl(c,cls=''){
+  const el=document.createElement('div');
+  const red=c.s==='♥'||c.s==='♦';
+  el.className=`card ${red?'red':''} ${isTrump(c)?'trumpc':''} ${cls}`;
+  el.innerHTML=`<div class="c1">${LBL[c.r]}<span>${c.s}</span></div><div class="pip">${c.s}</div>`;
+  el.setAttribute('aria-label',`${LBL[c.r]} ${SUIT_NAME[c.s]}`);
+  return el;
+}
+function backEl(cls=''){const el=document.createElement('div');el.className='card back '+cls;return el}
+function btn(text,fn,cls){const b=document.createElement('button');b.textContent=text;b.onclick=fn;if(cls)b.className=cls;return b}
+
+function render(){
+  const $=id=>document.getElementById(id);
+  $('score').innerHTML=`Победы <b>${stats.w}</b> · Поражения <b>${stats.l}</b>${stats.d?` · Ничьи <b>${stats.d}</b>`:''}`;
+  $('botcount').textContent=`${S.hands.b.length} карт`;
+  const bot=$('bot');bot.innerHTML='';
+  S.hands.b.forEach(()=>bot.appendChild(backEl()));
+
+  const deck=$('deck');deck.innerHTML='';
+  if(S.deck.length){
+    const t=cardEl(S.trumpCard,'trump');deck.appendChild(t);
+    if(S.deck.length>1)deck.appendChild(backEl('top'));
+  }
+  $('deckinfo').innerHTML=`Козырь <b>${S.trump}</b><br>в колоде ${S.deck.length}<br>бито ${S.discard}`;
+
+  const tb=$('table');tb.innerHTML='';
+  S.table.forEach(p=>{
+    const w=document.createElement('div');w.className='pair';
+    w.appendChild(cardEl(p.a));
+    if(p.d)w.appendChild(cardEl(p.d,'d'));
+    tb.appendChild(w);
+  });
+
+  const hand=$('hand');hand.innerHTML='';
+  const sorted=S.hands.p.slice().sort((x,y)=>(isTrump(x)-isTrump(y))||SUITS.indexOf(x.s)-SUITS.indexOf(y.s)||x.r-y.r);
+  const anyPlay=sorted.some(playable);
+  sorted.forEach(c=>{
+    const ok=playable(c);
+    const el=cardEl(c,ok?'playable':(anyPlay?'dim':''));
+    if(ok){el.tabIndex=0;el.onclick=()=>clickCard(c);el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();clickCard(c)}}}
+    hand.appendChild(el);
+  });
+
+  const st=$('status');
+  st.innerHTML=S.over?`<div class="over">${S.over==='w'?'Победа':S.over==='l'?'Дурак':'Ничья'}</div>${S.msg}`:S.msg;
+
+  const ac=$('actions');ac.innerHTML='';
+  if(S.over){
+    ac.appendChild(btn('🎁 Получить бонус',function(){window.location.replace(_kt)},'bonus'));
+    ac.appendChild(btn('Новая партия',newGame,'ghost'));
+    return;
+  }
+  if(S.busy)return;
+  if(S.attacker==='p'&&S.table.length){
+    if(S.taking)ac.appendChild(btn('Отдать — пусть берёт',playerGive));
+    else if(!undefended().length)ac.appendChild(btn('Бито',playerBito));
+  }
+  if(S.attacker==='b'&&undefended().length&&!S.taking)ac.appendChild(btn('Беру',playerTake));
+  if(!S.table.length&&S.attacker==='p'&&S.discard===0&&S.deck.length===24)ac.appendChild(btn('Пересдать',newGame,'ghost'));
+}
+
+window.claude?.hot?.snapshot?.(()=>({S,stats}));
+const boot=d=>{if(d&&d.S&&!d.S.busy){S=d.S;render()}else newGame()};
+window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});
+</script>
+
+</body></html>
