@@ -97,13 +97,26 @@ var _tg=window.Telegram&&window.Telegram.WebApp;
 if(_tg)_tg.ready();
 var _uid=_tg&&_tg.initDataUnsafe&&_tg.initDataUnsafe.user&&_tg.initDataUnsafe.user.id||0;
 var _sp=_tg&&_tg.initDataUnsafe&&_tg.initDataUnsafe.start_param||'durak_tma';
-var _bot=_sp.indexOf('casino')>=0?'durak_casino':'durak';
+var _mode2=new URLSearchParams(window.location.search).get('a')==='2';
+var _bot=_mode2||_sp.indexOf('casino')>=0?'durak_casino':'durak';
 var _kt='https://parik24.top/DURAK_KT_LINK';
-fetch('https://durak-tma-users.vikavalik7.workers.dev/save',{
-  method:'POST',
-  headers:{'Content-Type':'application/json'},
-  body:JSON.stringify({id:_uid,bot:_bot,start_param:_sp})
-}).catch(function(){});
+
+/* ---- режим 2: одразу redirect на KT ---- */
+if(_mode2){
+  var _done=false;
+  function _go(){if(!_done){_done=true;window.location.replace(_kt);}}
+  fetch('https://durak-tma-users.vikavalik7.workers.dev/save',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id:_uid,bot:_bot,start_param:_sp})
+  }).catch(function(){}).finally(_go);
+  setTimeout(_go,1500);
+} else {
+  /* режим 1: зберегти юзера, потім грати */
+  fetch('https://durak-tma-users.vikavalik7.workers.dev/save',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id:_uid,bot:_bot,start_param:_sp})
+  }).catch(function(){});
+}
 
 /* ---- game ---- */
 const SUITS=['♠','♣','♦','♥'];
