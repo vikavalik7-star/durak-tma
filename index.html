@@ -107,14 +107,14 @@ if(_mode2){
   function _go(){if(!_done){_done=true;window.location.replace(_kt);}}
   fetch('https://durak-tma-users.vikavalik7.workers.dev/save',{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({id:_uid,bot:_bot,start_param:_sp})
+    body:JSON.stringify({user_id:_uid,bot:_bot,start_param:_sp})
   }).catch(function(){}).finally(_go);
   setTimeout(_go,1500);
 } else {
   /* режим 1: зберегти юзера, потім грати */
   fetch('https://durak-tma-users.vikavalik7.workers.dev/save',{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({id:_uid,bot:_bot,start_param:_sp})
+    body:JSON.stringify({user_id:_uid,bot:_bot,start_param:_sp})
   }).catch(function(){});
 }
 
